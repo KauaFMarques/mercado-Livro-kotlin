@@ -19,5 +19,6 @@ class CustomerController {
     @PostMapping
     fun create(@RequestBody customer:PostCustomerRequest){
         println(customer)
+        println("hello world")
     }
 }
