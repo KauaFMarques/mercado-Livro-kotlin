@@ -1,9 +1,9 @@
 plugins {
-	id("org.springframework.boot") version "3.3.1"
-	id("io.spring.dependency-management") version "1.1.5"
-	kotlin("jvm") version "1.9.24"
-	kotlin("plugin.spring") version "1.9.24"
-	kotlin("plugin.jpa") version "1.9.24"
+	id("org.springframework.boot") version "3.2.2"  // Versão mais estável do Spring Boot 3
+	id("io.spring.dependency-management") version "1.1.4"
+	kotlin("jvm") version "1.9.22"
+	kotlin("plugin.spring") version "1.9.22"
+	kotlin("plugin.jpa") version "1.9.22"
 }
 
 group = "com.mercadolivro"
@@ -24,9 +24,16 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
+	// Flyway
 	implementation("org.flywaydb:flyway-core")
-	implementation("org.flywaydb:flyway-mysql") // Adicione esta linha
-	runtimeOnly("com.mysql:mysql-connector-j:8.3.0") // Esta é a nova dependência do MySQL
+	implementation("org.flywaydb:flyway-mysql")
+
+	// MySQL
+	runtimeOnly("com.mysql:mysql-connector-j")
+
+	// Test
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
