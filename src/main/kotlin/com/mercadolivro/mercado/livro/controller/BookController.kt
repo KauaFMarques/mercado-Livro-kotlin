@@ -2,8 +2,9 @@ package com.mercadolivro.mercado.livro.controller
 
 import com.mercadolivro.mercado.livro.controller.request.PostBookRequest
 import com.mercadolivro.mercado.livro.controller.request.PutBookRequest
+import com.mercadolivro.mercado.livro.controller.response.BookResponse
 import com.mercadolivro.mercado.livro.extension.toBookModel
-import com.mercadolivro.mercado.livro.model.BookModel
+import com.mercadolivro.mercado.livro.extension.toResponse
 import com.mercadolivro.mercado.livro.service.BookService
 import com.mercadolivro.mercado.livro.service.CustomerService
 import org.springframework.http.HttpStatus
@@ -32,17 +33,17 @@ class BookController(
     }
 
     @GetMapping
-    fun findAll(): List<BookModel>{
-        return bookService.findAll()
+    fun findAll(): List<BookResponse>{
+        return bookService.findAll().map { it.toResponse() }
     }
 
     @GetMapping("/active")
-    fun findActivies():List<BookModel> =
-        bookService.findActivies()
+    fun findActivies():List<BookResponse> =
+        bookService.findActivies().map { it.toResponse() }
 
     @GetMapping("/{id}")
-    fun findById(@PathVariable id:Int):BookModel{
-        return bookService.findById(id)
+    fun findById(@PathVariable id:Int):BookResponse{
+        return bookService.findById(id).toResponse()
     }
 
     @DeleteMapping("/{id}")
