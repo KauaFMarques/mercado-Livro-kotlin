@@ -37,29 +37,29 @@ class BookController(
     }
 
     @GetMapping
-    fun findAll(@PageableDefault(page=0, size = 10) pageable: Pageable): Page<BookResponse>{
+    fun findAll(@PageableDefault(page = 0, size = 10) pageable: Pageable): Page<BookResponse> {
         return bookService.findAll(pageable).map { it.toResponse() }
     }
 
     @GetMapping("/active")
-    fun findActivies(@PageableDefault(page=0, size = 10) pageable: Pageable):Page<BookResponse> =
-        bookService.findActivies(pageable).map { it.toResponse() }
+    fun findActives(@PageableDefault(page = 0, size = 10) pageable: Pageable): Page<BookResponse> =
+        bookService.findActives(pageable).map { it.toResponse() }
 
     @GetMapping("/{id}")
-    fun findById(@PathVariable id:Int):BookResponse{
+    fun findById(@PathVariable id: Int): BookResponse {
         return bookService.findById(id).toResponse()
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@PathVariable id: Int){
+    fun delete(@PathVariable id: Int) {
         bookService.delete(id)
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun update(@PathVariable id: Int,@RequestBody book: PutBookRequest){
-        val bookSaved=bookService.findById(id)
+    fun update(@PathVariable id: Int, @RequestBody book: PutBookRequest) {
+        val bookSaved = bookService.findById(id)
         bookService.update(book.toBookModel(bookSaved))
     }
 
