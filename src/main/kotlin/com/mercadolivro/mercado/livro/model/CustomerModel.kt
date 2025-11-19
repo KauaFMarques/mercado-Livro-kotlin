@@ -1,5 +1,6 @@
 package com.mercadolivro.mercado.livro.model
 
+import com.mercadolivro.mercado.livro.enums.CustomerRole
 import com.mercadolivro.mercado.livro.enums.CustomerStatus
 import jakarta.persistence.*
 
@@ -21,5 +22,11 @@ data class CustomerModel(
     var status: CustomerStatus,
 
     @Column
-    val password: String
+    val password: String,
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "customer_roles", joinColumns = [JoinColumn(name = "customer_id")])
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    var roles: MutableSet<CustomerRole> = mutableSetOf(CustomerRole.CUSTOMER)
 )

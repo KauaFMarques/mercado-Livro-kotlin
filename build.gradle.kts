@@ -1,5 +1,5 @@
 plugins {
-	id("org.springframework.boot") version "3.2.2"  // Versão mais estável do Spring Boot 3
+	id("org.springframework.boot") version "3.2.2"
 	id("io.spring.dependency-management") version "1.1.4"
 	kotlin("jvm") version "1.9.22"
 	kotlin("plugin.spring") version "1.9.22"
@@ -28,8 +28,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
-
-
+	// **ADD THIS LINE FOR SPRING SECURITY**
+	implementation("org.springframework.boot:spring-boot-starter-security")
 
 	// Flyway
 	implementation("org.flywaydb:flyway-core")
