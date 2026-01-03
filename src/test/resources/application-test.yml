@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://localhost:3306/mercadolivrotest?createDatabaseIfNotExist=true
+    username: root
+    password: mk875
+  jackson:
+    default-property-inclusion: non_null

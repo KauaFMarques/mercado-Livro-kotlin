@@ -22,7 +22,7 @@ class SecurityConfig {
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .requestMatchers("/customer/**").permitAll() // 👈 REMOVEU O 'S'
+                    .requestMatchers("/customer/**").permitAll()
                     .requestMatchers("/books/**").permitAll()
                     .anyRequest().authenticated()
             }
