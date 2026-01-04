@@ -33,7 +33,8 @@ class CustomerService(
 
     fun findById(id: Int): CustomerModel {
         return customerRepository.findById(id).orElseThrow {
-            NotFoundException(Errors.ML201.message, Errors.ML201.code)
+            // CORREÇÃO: Adicione o .format(id)
+            NotFoundException(Errors.ML201.message.format(id), Errors.ML201.code)
         }
     }
 

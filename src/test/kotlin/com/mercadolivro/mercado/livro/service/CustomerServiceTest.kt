@@ -1,6 +1,7 @@
 package com.mercadolivro.mercado.livro.service
 
 import com.mercadolivro.mercado.livro.enums.CustomerStatus
+import com.mercadolivro.mercado.livro.exception.NotFoundException
 import com.mercadolivro.mercado.livro.model.CustomerModel
 import com.mercadolivro.mercado.livro.repository.CustomerRepository
 import io.mockk.every
@@ -11,9 +12,12 @@ import io.mockk.verify
 // REMOVIDO: import org.hibernate.validator.constraints.UUID (Causa o conflito)
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import java.util.Optional
 import java.util.UUID // MANTIDO: Para usar UUID.randomUUID()
+import kotlin.random.Random
 
 @ExtendWith(MockKExtension::class)
 class CustomerServiceTest {
@@ -32,7 +36,7 @@ class CustomerServiceTest {
 
     @Test
     fun should_return_all_customers() {
-        val fakeCustomers = listOf(build_customer(), build_customer())
+        val fakeCustomers = listOf(buildCustomer(), buildCustomer())
 
         every { customerRepository.findAll() } returns fakeCustomers
 
@@ -47,7 +51,7 @@ class CustomerServiceTest {
     @Test
     fun should_return_when_name_is_informed() {
         val name = UUID.randomUUID().toString()
-        val fakeCustomers = listOf(build_customer(), build_customer())
+        val fakeCustomers = listOf(buildCustomer(), buildCustomer())
 
         // 1. CORREÇÃO: Mockar o findByNameContaining, pois é ele que será chamado
         every { customerRepository.findByNameContaining(name) } returns fakeCustomers
@@ -67,7 +71,53 @@ class CustomerServiceTest {
         verify(exactly = 0) { customerRepository.existsByEmail(any()) }
     }
 
-    fun build_customer(
+    @Test
+    fun should_customer_and_encrypt_password(){
+        val initialPassword = Math.random().toString()
+        val fakeCustomer = buildCustomer(password = initialPassword)
+        val fakePassword = UUID.randomUUID().toString()
+        val fakeCustomerEncrypted = fakeCustomer.copy(password = fakePassword)
+
+        every { customerRepository.save(fakeCustomerEncrypted) } returns fakeCustomer
+        every { bCrypt.encode(initialPassword) }
+
+        customerService.create(fakeCustomer)
+
+        verify(exactly = 1) { customerRepository.save(any()) }
+        verify(exactly = 1) { bCrypt.encode(any()) }
+    }
+
+    @Test
+    fun should_return_customer_by_id(){
+        val id = Random.nextInt()
+        val fakeCustomer = buildCustomer(id)
+        every { customerRepository.findById(id) }returns Optional.of(fakeCustomer)
+
+        val customer = customerService.findById(id)
+
+        assertEquals(fakeCustomer, customer)
+        verify(exactly = 1) { customerRepository.findById(id) }
+    }
+
+    @Test
+    fun should_throw_error_when_not_found() {
+        val id = Random.nextInt()
+        every { customerRepository.findById(id) } returns Optional.empty()
+
+        val error = assertThrows<NotFoundException> {
+            customerService.findById(id)
+        }
+
+        // Agora o Service vai retornar o ID no lugar do %s, então o assertEquals vai bater!
+        assertEquals("Customer [${id}] not exists", error.message)
+
+        // CORREÇÃO: Use o código que está no seu Enum (ML-1102) e a propriedade .code (minúsculo)
+        assertEquals("ML-1102", error.ErrorCode)
+
+        verify(exactly = 1) { customerRepository.findById(id) }
+    }
+
+    fun buildCustomer(
         id: Int? = null,
         name: String = "customerName",
         email: String = "${UUID.randomUUID()}@email.com",
