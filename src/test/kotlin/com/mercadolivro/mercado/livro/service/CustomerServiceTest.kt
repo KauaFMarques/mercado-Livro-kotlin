@@ -1,13 +1,17 @@
 package com.mercadolivro.mercado.livro.service
 
 import com.mercadolivro.mercado.livro.enums.CustomerStatus
+import com.mercadolivro.mercado.livro.enums.Errors
 import com.mercadolivro.mercado.livro.exception.NotFoundException
 import com.mercadolivro.mercado.livro.model.CustomerModel
 import com.mercadolivro.mercado.livro.repository.CustomerRepository
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
+import io.mockk.impl.annotations.SpyK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.verify
 // REMOVIDO: import org.hibernate.validator.constraints.UUID (Causa o conflito)
 import org.junit.jupiter.api.Assertions.*
@@ -32,6 +36,7 @@ class CustomerServiceTest {
     lateinit var bCrypt: BCryptPasswordEncoder
 
     @InjectMockKs
+    @SpyK
     private lateinit var customerService: CustomerService
 
     @Test
@@ -72,19 +77,20 @@ class CustomerServiceTest {
     }
 
     @Test
-    fun should_customer_and_encrypt_password(){
+    fun should_customer_and_encrypt_password() {
         val initialPassword = Math.random().toString()
         val fakeCustomer = buildCustomer(password = initialPassword)
         val fakePassword = UUID.randomUUID().toString()
         val fakeCustomerEncrypted = fakeCustomer.copy(password = fakePassword)
 
-        every { customerRepository.save(fakeCustomerEncrypted) } returns fakeCustomer
-        every { bCrypt.encode(initialPassword) }
+        // CORREÇÃO: Adicione o returns
+        every { bCrypt.encode(initialPassword) } returns fakePassword
+        every { customerRepository.save(any()) } returns fakeCustomer
 
         customerService.create(fakeCustomer)
 
         verify(exactly = 1) { customerRepository.save(any()) }
-        verify(exactly = 1) { bCrypt.encode(any()) }
+        verify(exactly = 1) { bCrypt.encode(initialPassword) }
     }
 
     @Test
@@ -115,6 +121,102 @@ class CustomerServiceTest {
         assertEquals("ML-1102", error.ErrorCode)
 
         verify(exactly = 1) { customerRepository.findById(id) }
+    }
+
+    @Test
+    fun should_update_customer(){
+        val id=Random.nextInt()
+        val fakeCustomer = buildCustomer(id)
+
+        every{ customerRepository.existsById(id) } returns true
+        every{ customerRepository.save(fakeCustomer) } returns fakeCustomer
+
+        customerService.update(fakeCustomer)
+
+        verify(exactly = 1) { customerRepository.existsById(id) }
+        verify(exactly = 1) { customerRepository.save(fakeCustomer) }
+
+    }
+
+    @Test
+    fun should_throw_not_found_exception_when_update_customer(){
+        val id=Random.nextInt()
+        val fakeCustomer = buildCustomer(id)
+
+        every{ customerRepository.existsById(id) } returns false
+        every{ customerRepository.save(fakeCustomer) } returns fakeCustomer
+
+        val error = assertThrows<NotFoundException> {
+            customerService.update(fakeCustomer)
+        }
+
+        assertEquals("Customer [${id}] not exists", error.message)
+        assertEquals("ML-1102", error.ErrorCode)
+
+        verify(exactly = 1) { customerRepository.existsById(id) }
+        verify(exactly = 0) { customerRepository.save(any()) }
+    }
+
+    @Test
+    fun should_delete_customer(){
+        val id= Random.nextInt()
+        val fakeCustomer= buildCustomer(id = id)
+        val expectedCustomer = fakeCustomer.copy(status = CustomerStatus.INATIVO)
+
+        every { customerService.findById(id) } returns fakeCustomer
+        every { customerRepository.save(expectedCustomer) } returns expectedCustomer
+        every { bookService.deleteByCustomer(fakeCustomer) } just runs
+
+        customerService.delete(id)
+
+        verify(exactly = 1) { customerService.findById(id) }
+        verify(exactly = 1) { bookService.deleteByCustomer(fakeCustomer) }
+        verify(exactly = 1) { customerRepository.save(expectedCustomer) }
+    }
+
+    @Test
+    fun should_throw_not_found_exception_when_delete_customer() {
+        val id = Random.nextInt()
+
+        // Mockamos o comportamento do findById (que é chamado dentro do delete)
+        every { customerService.findById(id) } throws NotFoundException(Errors.ML201.message.format(id), Errors.ML201.code)
+
+        val error = assertThrows<NotFoundException> {
+            customerService.delete(id) // CORREÇÃO: Chame delete(id)
+        }
+
+        assertEquals("Customer [${id}] not exists", error.message)
+        assertEquals("ML-1102", error.ErrorCode)
+
+        verify(exactly = 1) { customerService.findById(id) }
+        verify(exactly = 0) { bookService.deleteByCustomer(any()) }
+        verify(exactly = 0) { customerRepository.save(any()) }
+    }
+
+    @Test
+    fun should_return_true_when_email_avaliable(){
+        val email = "${Random.nextInt().toString()}@email.com"
+
+        every { customerRepository.existsByEmail(email) }returns false
+
+        val emailAvaliable = customerService.emailAvaliable(email)
+
+        assertTrue(emailAvaliable)
+        verify(exactly = 1) { customerRepository.existsByEmail(email) }
+
+    }
+
+    @Test
+    fun should_return_false_when_email_unavaliable(){
+        val email = "${Random.nextInt().toString()}@email.com"
+
+        every { customerRepository.existsByEmail(email) }returns true
+
+        val emailAvaliable = customerService.emailAvaliable(email)
+
+        assertFalse(emailAvaliable)
+        verify(exactly = 1) { customerRepository.existsByEmail(email) }
+
     }
 
     fun buildCustomer(
