@@ -5,6 +5,7 @@ import com.mercadolivro.mercado.livro.enums.Errors
 import com.mercadolivro.mercado.livro.exception.NotFoundException
 import com.mercadolivro.mercado.livro.model.CustomerModel
 import com.mercadolivro.mercado.livro.repository.CustomerRepository
+import com.mercadolivro.mercado.livro.helper.buildCustomer
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -13,7 +14,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.just
 import io.mockk.runs
 import io.mockk.verify
-// REMOVIDO: import org.hibernate.validator.constraints.UUID (Causa o conflito)
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -218,19 +218,4 @@ class CustomerServiceTest {
         verify(exactly = 1) { customerRepository.existsByEmail(email) }
 
     }
-
-    fun buildCustomer(
-        id: Int? = null,
-        name: String = "customerName",
-        email: String = "${UUID.randomUUID()}@email.com",
-        password: String = "password"
-    ) = CustomerModel(
-        id = id,
-        name = name,
-        email = email,
-        status = CustomerStatus.ATIVO,
-        password = password,
-        // CORREÇÃO: Usando mutableSetOf e o tipo Profile conforme o erro da IDE
-        roles = mutableSetOf(com.mercadolivro.mercado.livro.enums.Profile.CUSTOMER)
-    )
 }
