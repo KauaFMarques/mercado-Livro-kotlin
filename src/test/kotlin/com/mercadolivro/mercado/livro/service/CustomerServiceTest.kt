@@ -44,6 +44,29 @@ class CustomerServiceTest {
         verify (exactly = 0){customerRepository.existsByEmail(any()) }
     }
 
+    @Test
+    fun should_return_when_name_is_informed() {
+        val name = UUID.randomUUID().toString()
+        val fakeCustomers = listOf(build_customer(), build_customer())
+
+        // 1. CORREÇÃO: Mockar o findByNameContaining, pois é ele que será chamado
+        every { customerRepository.findByNameContaining(name) } returns fakeCustomers
+
+        // 2. CORREÇÃO: Chamar o metodo getAll passando o nome
+        val customers = customerService.getAll(name)
+
+        assertEquals(fakeCustomers, customers)
+
+        // 3. CORREÇÃO: Inverter as verificações (Verify)
+        // Quando passamos nome, o findAll NÃO deve ser chamado
+        verify(exactly = 0) { customerRepository.findAll() }
+
+        // E o findByNameContaining deve ser chamado exatamente 1 vez com o nome correto
+        verify(exactly = 1) { customerRepository.findByNameContaining(name) }
+
+        verify(exactly = 0) { customerRepository.existsByEmail(any()) }
+    }
+
     fun build_customer(
         id: Int? = null,
         name: String = "customerName",
