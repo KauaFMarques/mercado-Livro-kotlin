@@ -9,6 +9,7 @@ import com.mercadolivro.mercado.livro.extension.toResponse
 import com.mercadolivro.mercado.livro.service.CustomerService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -38,6 +39,8 @@ class CustomerController(
     }
 
     @GetMapping("/{id}")
+// Se o ID da URL for igual ao ID dentro do UserCustomDetails, permite o acesso
+    @PreAuthorize("hasRole('ROLE_ADMIN') or #id == principal.id")
     fun getCustomer(@PathVariable id: Int): CustomerResponse {
         return customerService.findById(id).toResponse()
     }

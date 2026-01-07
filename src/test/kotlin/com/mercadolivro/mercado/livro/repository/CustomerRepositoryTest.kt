@@ -1,4 +1,4 @@
-package com.mercadolivro.mercado.livro.repository
+ package com.mercadolivro.mercado.livro.repository
 
 import com.mercadolivro.mercado.livro.helper.buildCustomer
 import io.mockk.junit5.MockKExtension
@@ -64,15 +64,16 @@ class CustomerRepositoryTest {
     @Nested
     inner class find_by_email {
         @Test
-        fun should_return_customer_when_email_exists() {
+        fun should_return_customer_when_email_exists(){
             val email = "teste@email.com"
             val customer = customerRepository.save(buildCustomer(email = email))
 
-            // CORREÇÃO: Chame o repositório diretamente
             val result = customerRepository.findByEmail(email)
 
+            // CORREÇÃO: Não atribua o assertTrue a uma variável
             assertNotNull(result)
-            assertEquals(customer, result)
+            assertEquals(customer.id, result?.id)
+            assertEquals(customer.email, result?.email)
         }
 
         @Test

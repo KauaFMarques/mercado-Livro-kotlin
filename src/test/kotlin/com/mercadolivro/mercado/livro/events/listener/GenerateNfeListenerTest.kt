@@ -36,9 +36,7 @@ class GenerateNfeListenerTest {
         every { UUID.randomUUID() } returns fakeNfe
         every { purchaseService.update(any()) } just runs
 
-                // Agora o Kotlin encontrará o metodo .listen() na classe GenerateNfeListener
-                generateNfeListener.listener(PurchaseEvent(this, purchase))
-
+        generateNfeListener.listener(PurchaseEvent(this, purchase))
         verify(exactly = 1) { purchaseService.update(purchaseExpect) }
     }
 }
